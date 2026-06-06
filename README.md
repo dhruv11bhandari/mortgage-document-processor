@@ -49,7 +49,7 @@ Pages are classified in three tiers, cheapest first:
 For each processed package, the system produces:
 
 output/{job_id}/
-├── manifest.json          ← structured doc inventory + exceptions
+├── manifest.json ← structured doc inventory + exceptions
 ├── bank_stmt.pdf
 ├── w2.pdf
 ├── pay_stub.pdf
