@@ -1,8 +1,4 @@
-# Stage 8 - Ordering Engine
-
 import re
-
-
 def get_page_number(text):
     match = re.search(r"[Pp]age\s+(\d+)\s+of\s+\d+", text)
     if match:
