@@ -1,6 +1,3 @@
-# Stage 10 - Exception Reporting
-
-
 def build_report(exceptions):
     report = {
         "total": len(exceptions),
