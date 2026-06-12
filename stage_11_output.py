@@ -1,10 +1,6 @@
-# Stage 11 - Structured Output
-
 import fitz
 import json
 import os
-
-
 def build_output(job_id, grouped, exceptions, source_pdf):
     src = fitz.open(source_pdf)
     out_dir = f"output/{job_id}"
