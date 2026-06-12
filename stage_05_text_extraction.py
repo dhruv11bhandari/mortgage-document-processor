@@ -1,8 +1,4 @@
-# Stage 5 - Text and Layout Extraction
-
 import re
-
-
 KEYWORDS = {
     "1003_form":     ["Uniform Residential Loan Application", "1003"],
     "bank_stmt":     ["Beginning Balance", "Ending Balance", "Statement Period"],
@@ -13,8 +9,6 @@ KEYWORDS = {
     "appraisal":     ["Appraised Value", "Subject Property"],
     "title":         ["Title Insurance", "Deed of Trust"],
 }
-
-
 def extract_features(page):
     text = page["raw_text"]
 
