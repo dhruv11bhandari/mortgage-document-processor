@@ -1,6 +1,3 @@
-# Stage 3 - Scanned vs Digital Detection
-
-
 def detect_page_type(page):
     text = page["raw_text"].strip()
 
