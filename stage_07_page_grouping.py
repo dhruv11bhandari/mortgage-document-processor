@@ -1,13 +1,7 @@
-# Stage 7 - Page Grouping
-
 import hashlib
 from collections import defaultdict
-
-
 def get_hash(text):
     return hashlib.md5(text.encode()).hexdigest()
-
-
 def group_pages(pages):
     buckets = defaultdict(list)
 
