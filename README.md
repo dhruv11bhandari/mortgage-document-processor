@@ -4,6 +4,8 @@ An end-to-end pipeline for processing large, unstructured mortgage loan PDF pack
 (up to 2,000 pages) into clean, validated, and structured outputs ready for downstream
 decisioning systems.
 
+
+
 Designed with an **LLM-last strategy** — 10 of 11 stages run entirely on free,
 open-source tools. LLM API calls are reserved only for low-confidence edge cases
 in classification (~5% of pages), keeping cost to ~$0.05 per package.
