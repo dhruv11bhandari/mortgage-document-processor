@@ -55,10 +55,10 @@ python -m pytest
 
 ## Project layout
 
-- `mortgage_processor/api.py` — FastAPI app and upload/job/download routes
-- `mortgage_processor/processing.py` — PDF extraction, optional OCR, grouping, and output
-- `mortgage_processor/classification.py` — deterministic classifier and supported keyword sets
-- `static/` — responsive frontend
+- `backend/app/main.py` — FastAPI app and upload/job/download routes
+- `backend/app/processing.py` — PDF extraction, optional OCR, grouping, and output
+- `backend/app/classification.py` — deterministic classifier and supported keyword sets
+- `frontend/` — responsive browser workspace and its assets
 - `tests/` — focused classifier and page-ordering checks
 
 ## Privacy and operational notes

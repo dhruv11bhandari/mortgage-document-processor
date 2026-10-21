@@ -14,7 +14,8 @@ from fastapi.staticfiles import StaticFiles
 
 from .processing import MAX_UPLOAD_BYTES, process_pdf
 
-BASE = Path(__file__).resolve().parent.parent
+BASE = Path(__file__).resolve().parents[2]
+FRONTEND = BASE / "frontend"
 DATA = Path(os.getenv("MORTGAGE_DATA_DIR", str(BASE / "data")))
 INCOMING = DATA / "incoming"
 OUTPUT = DATA / "output"
@@ -22,7 +23,7 @@ INCOMING.mkdir(parents=True, exist_ok=True)
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title="Mortgage Desk", version="1.0.0", description="Local-first mortgage document package processing.")
-app.mount("/static", StaticFiles(directory=BASE / "static"), name="static")
+app.mount("/static", StaticFiles(directory=FRONTEND / "assets"), name="static")
 
 
 def _load_jobs() -> list[dict[str, Any]]:
@@ -51,7 +52,7 @@ def _run(job_id: str, path: Path) -> None:
 
 @app.get("/", response_class=HTMLResponse)
 def home() -> str:
-    return (BASE / "static" / "index.html").read_text(encoding="utf-8")
+    return (FRONTEND / "index.html").read_text(encoding="utf-8")
 
 
 @app.get("/api/health")

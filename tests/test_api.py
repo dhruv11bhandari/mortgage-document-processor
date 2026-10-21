@@ -1,11 +1,11 @@
 import pymupdf as fitz
 from fastapi.testclient import TestClient
 
-from mortgage_processor.api import app
+from backend.app.main import app
 
 
 def test_health_and_upload_flow(tmp_path, monkeypatch):
-    import mortgage_processor.api as api
+    import backend.app.main as api
     monkeypatch.setattr(api, "OUTPUT", tmp_path / "output")
     monkeypatch.setattr(api, "INCOMING", tmp_path / "incoming")
     api.OUTPUT.mkdir()
