@@ -110,10 +110,14 @@ function openUpload() {
   $('#selected-file').hidden = true;
   $('#upload-error').hidden = true;
   $('#submit-upload').disabled = true;
-  uploadDialog.showModal();
+  if (!uploadDialog.open) uploadDialog.showModal();
 }
-$('#new-package').addEventListener('click', openUpload);
-$('#empty-upload').addEventListener('click', openUpload);
+[$('#new-package'), $('#empty-upload')].forEach((button) => {
+  button?.addEventListener('click', (event) => {
+    event.preventDefault();
+    openUpload();
+  });
+});
 $('#demo-preview')?.addEventListener('click', () => useDemoFallback('Demo preview · Sample data only; no documents were uploaded or processed.'));
 $('#cancel-upload').addEventListener('click', () => uploadDialog.close());
 $('#refresh').addEventListener('click', refreshJobs);

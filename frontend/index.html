@@ -118,10 +118,10 @@ dialog::backdrop{background:rgba(0,0,0,.78);backdrop-filter:blur(8px)}
 .modal-close{position:absolute;top:14px;right:14px}.modal-close button{background:rgba(255,255,255,.07);border:0;color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
 .modal-mark{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--grad);color:#000;font-size:24px;margin-bottom:16px}
 .modal-copy{color:var(--mute);margin:8px 0 20px}
-.dropzone{display:grid;gap:8px;justify-items:center;text-align:center;padding:34px 16px;border-radius:20px;border:2px dashed #64748b;background:#fff;color:#111827;cursor:pointer;transition:.2s;box-shadow:0 8px 28px rgba(0,0,0,.2)}
-.dropzone:hover,.dropzone.drag{background:#f1f7ff;border-color:#2563eb;transform:scale(1.01)}
+.dropzone{display:grid!important;gap:10px;justify-items:center;align-content:center;text-align:center;padding:30px 16px;min-height:190px;border-radius:20px;border:2px dashed #475569!important;background:#fff!important;color:#111827!important;opacity:1!important;visibility:visible!important;cursor:pointer;transition:background .2s,border-color .2s,transform .2s;box-shadow:0 8px 28px rgba(0,0,0,.2)}
+.dropzone:hover,.dropzone.drag{background:#f1f7ff!important;border-color:#2563eb!important;transform:scale(1.01)}
 .dropzone:focus-within{outline:3px solid #60a5fa;outline-offset:4px}
-.dropzone strong{color:#111827}.dropzone u{color:#155eef;text-underline-offset:3px}.dropzone small{color:#475569}.upload-icon{font-size:26px;color:#155eef}
+.dropzone strong{color:#111827!important;opacity:1!important}.dropzone u{color:#155eef!important;text-underline-offset:3px}.dropzone small{color:#334155!important;opacity:1!important}.upload-icon{font-size:26px;color:#155eef!important;opacity:1!important}
 .selected-file,.upload-error{margin-top:14px;padding:12px;border-radius:12px;font-size:13px;background:rgba(255,255,255,.05)}
 .upload-error{color:#fca5a5;background:rgba(248,113,113,.1)}
 [hidden]{display:none!important}
@@ -421,7 +421,7 @@ new MutationObserver(()=>gsap.fromTo('#job-list tr:not(.animated)',{opacity:0,x:
 document.querySelectorAll('dialog').forEach(d=>{
   new MutationObserver(()=>{if(d.open){
     gsap.fromTo(d,{opacity:0,scale:.85,rotateX:-25,y:40,transformPerspective:1000},{opacity:1,scale:1,rotateX:0,y:0,duration:.7,ease:'back.out(1.5)'});
-    gsap.from(d.querySelectorAll('.modal-mark,.section-kicker,h2,.modal-copy,.dropzone,.modal-actions'),{y:20,opacity:0,stagger:.06,duration:.6,delay:.15,ease:'power3.out'});
+    gsap.from(d.querySelectorAll('.modal-mark,.section-kicker,h2,.modal-copy,.modal-actions'),{y:20,opacity:0,stagger:.06,duration:.6,delay:.15,ease:'power3.out'});
   }}).observe(d,{attributes:true,attributeFilter:['open']});
 });
 const dz=document.getElementById('dropzone');
