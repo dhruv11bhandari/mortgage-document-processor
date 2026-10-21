@@ -1,4 +1,4 @@
-from mortgage_processor.processing import _page_sequence
+from backend.app.processing import _page_sequence
 
 
 def test_page_sequence_recognizes_common_labels():
@@ -10,7 +10,7 @@ def test_page_sequence_recognizes_common_labels():
 def test_process_pdf_creates_grouped_pdf_and_manifest(tmp_path):
     import pymupdf as fitz
     import json
-    from mortgage_processor.processing import process_pdf
+    from backend.app.processing import process_pdf
 
     source = tmp_path / "sample.pdf"
     doc = fitz.open()

@@ -1,4 +1,4 @@
-from mortgage_processor.classification import classify_text, score_text
+from backend.app.classification import classify_text, score_text
 
 
 def test_classifies_common_mortgage_documents():
