@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f6f4"><title>Mortgage Desk — Document operations</title>
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="#"><span class="brand-icon">M</span><span>Mortgage<span class="brand-light">Desk</span><small>DOCUMENT OPERATIONS</small></span></a>
+    <div class="nav-label">WORKSPACE</div><a class="nav-item active" href="#overview"><span>▦</span> Overview</a><a class="nav-item" href="#packages"><span>▤</span> Packages <b id="nav-count">0</b></a>
+    <div class="side-bottom"><div class="local-card"><span class="status-dot"></span><div><strong>Private workspace</strong><small>Files stay on this device</small></div></div><div class="profile"><div class="avatar">MD</div><div><strong>Mortgage Desk</strong><small>Local instance</small></div><span class="more">···</span></div></div>
+  </aside>
+  <main class="main" id="overview">
+    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> Overview</div><div class="top-actions"><span class="today" id="today"></span><span class="top-divider"></span><div class="user-avatar">D</div></div></header>
+    <section class="welcome"><div><div class="eyebrow"><span></span> DOCUMENT OPERATIONS</div><h1>Good morning. <em>Let's get organized.</em></h1><p>Turn mortgage packages into clear, review-ready document sets.</p></div><button class="button primary" id="new-package"><span>＋</span> New package</button></section>
+    <section class="metrics" aria-label="Workspace summary">
+      <article class="metric-card"><div class="metric-top"><span>PACKAGES PROCESSED</span><span class="metric-symbol">▤</span></div><div class="metric-value" id="metric-packages">—</div><div class="metric-note">In this workspace</div></article>
+      <article class="metric-card"><div class="metric-top"><span>PAGES REVIEWED</span><span class="metric-symbol">▧</span></div><div class="metric-value" id="metric-pages">—</div><div class="metric-note">Across all packages</div></article>
+      <article class="metric-card"><div class="metric-top"><span>NEEDS ATTENTION</span><span class="metric-symbol warm">◉</span></div><div class="metric-value" id="metric-attention">—</div><div class="metric-note">Flags for human review</div></article>
+      <article class="metric-card accent-card"><div class="metric-top"><span>PROCESSING MODE</span><span class="lock">⌑</span></div><div class="metric-value mode-value">On-device</div><div class="metric-note"><span class="status-dot"></span> Documents remain local</div></article>
+    </section>
+    <section class="content-grid" id="packages">
+      <div class="panel package-panel"><div class="panel-heading"><div><div class="section-kicker">YOUR WORKSPACE</div><h2>Recent packages</h2></div><button class="text-button" id="refresh">Refresh <span>↻</span></button></div>
+        <div class="table-wrap"><table><thead><tr><th>PACKAGE</th><th>PAGES</th><th>DOCUMENTS</th><th>STATUS</th><th></th></tr></thead><tbody id="job-list"><tr><td colspan="5" class="loading-row"><span class="spinner"></span> Loading workspace…</td></tr></tbody></table></div>
+        <div class="empty-state" id="empty-state" hidden><div class="empty-icon">▤</div><h3>Your workspace is ready</h3><p>Upload a mortgage package to identify and organize its documents.</p><button class="button primary" id="empty-upload">Upload first package</button></div>
+      </div>
+      <aside class="panel side-panel"><div class="panel-heading"><div><div class="section-kicker">HOW IT WORKS</div><h2>From package to clarity</h2></div></div>
+        <div class="steps"><div class="step"><span class="step-num">01</span><div><strong>Upload a package</strong><p>Choose a PDF. Processing runs on this device.</p></div></div><div class="step"><span class="step-num">02</span><div><strong>Review detected docs</strong><p>Pages are grouped by document type with source references.</p></div></div><div class="step"><span class="step-num">03</span><div><strong>Download your set</strong><p>Export organized PDFs and a review manifest.</p></div></div></div>
+        <div class="notice"><span>ⓘ</span><p>Classification is an assistive starting point. Review all results before making lending decisions.</p></div>
+      </aside>
+    </section>
+    <footer>Mortgage Desk <span>•</span> Local-first document processing <span class="footer-right">Built for careful review</span></footer>
+  </main>
+  <dialog id="upload-dialog"><form method="dialog" class="modal-close"><button aria-label="Close">×</button></form><div class="modal-mark">↑</div><div class="section-kicker">NEW PACKAGE</div><h2>Upload mortgage package</h2><p class="modal-copy">Select a PDF package to classify and organize. Your file is processed locally.</p><label class="dropzone" id="dropzone"><input type="file" id="file-input" accept="application/pdf,.pdf" hidden><span class="upload-icon">↑</span><strong>Drop your PDF here, or <u>browse files</u></strong><small>PDF only · Up to 50 MB · Up to 2,000 pages</small></label><div class="selected-file" id="selected-file" hidden></div><div class="upload-error" id="upload-error" hidden></div><div class="modal-actions"><button class="button secondary" id="cancel-upload">Cancel</button><button class="button primary" id="submit-upload" disabled>Process package <span>→</span></button></div><p class="privacy-note">⌑ &nbsp; Secure by design. Files never leave this device.</p></dialog>
+  <dialog id="detail-dialog"><form method="dialog" class="modal-close"><button aria-label="Close">×</button></form><div id="detail-content"></div></dialog>
+  <script src="/static/app.js" defer></script>
+</body></html>
