@@ -118,9 +118,10 @@ dialog::backdrop{background:rgba(0,0,0,.78);backdrop-filter:blur(8px)}
 .modal-close{position:absolute;top:14px;right:14px}.modal-close button{background:rgba(255,255,255,.07);border:0;color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
 .modal-mark{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--grad);color:#000;font-size:24px;margin-bottom:16px}
 .modal-copy{color:var(--mute);margin:8px 0 20px}
-.dropzone{display:grid;gap:6px;justify-items:center;text-align:center;padding:34px 16px;border-radius:20px;border:1.5px dashed rgba(96,165,250,.45);background:rgba(96,165,250,.05);cursor:pointer;transition:.3s}
-.dropzone:hover,.dropzone.drag{background:rgba(96,165,250,.14);border-color:var(--a);transform:scale(1.015)}
-.dropzone small{color:var(--mute)}.upload-icon{font-size:26px;color:var(--a)}
+.dropzone{display:grid;gap:8px;justify-items:center;text-align:center;padding:34px 16px;border-radius:20px;border:2px dashed #64748b;background:#fff;color:#111827;cursor:pointer;transition:.2s;box-shadow:0 8px 28px rgba(0,0,0,.2)}
+.dropzone:hover,.dropzone.drag{background:#f1f7ff;border-color:#2563eb;transform:scale(1.01)}
+.dropzone:focus-within{outline:3px solid #60a5fa;outline-offset:4px}
+.dropzone strong{color:#111827}.dropzone u{color:#155eef;text-underline-offset:3px}.dropzone small{color:#475569}.upload-icon{font-size:26px;color:#155eef}
 .selected-file,.upload-error{margin-top:14px;padding:12px;border-radius:12px;font-size:13px;background:rgba(255,255,255,.05)}
 .upload-error{color:#fca5a5;background:rgba(248,113,113,.1)}
 [hidden]{display:none!important}
