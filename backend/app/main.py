@@ -48,15 +48,16 @@ def _load_jobs() -> list[dict[str, Any]]:
     return sorted(jobs, key=lambda j: j.get("created_at", ""), reverse=True)
 
 
-def _run(job_id: str, path: Path) -> None:
+def _run(job_id: str, path: Path, original_name: str) -> None:
     try:
         result = process_pdf(path, OUTPUT, job_id)
+        result["file_name"] = original_name
         result["created_at"] = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
         (OUTPUT / job_id / "manifest.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     except Exception as exc:
         job_dir = OUTPUT / job_id
         job_dir.mkdir(exist_ok=True)
-        result = {"job_id": job_id, "status": "failed", "file_name": path.name, "error": str(exc)}
+        result = {"job_id": job_id, "status": "failed", "file_name": original_name, "error": str(exc)}
         (job_dir / "manifest.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
     finally:
         path.unlink(missing_ok=True)
@@ -91,6 +92,7 @@ def job(job_id: str) -> dict[str, Any]:
 async def create_job(background: BackgroundTasks, file: UploadFile = File(...)) -> dict[str, str]:
     if not file.filename or Path(file.filename).suffix.lower() != ".pdf":
         raise HTTPException(400, "Upload a PDF file.")
+    original_name = Path(file.filename).name
     job_id = str(uuid.uuid4())
     target = INCOMING / f"{job_id}.pdf"
     size = 0
@@ -107,12 +109,16 @@ async def create_job(background: BackgroundTasks, file: UploadFile = File(...)) 
     if size == 0:
         target.unlink(missing_ok=True)
         raise HTTPException(400, "The uploaded file is empty.")
+    with target.open("rb") as uploaded:
+        if b"%PDF-" not in uploaded.read(1024):
+            target.unlink(missing_ok=True)
+            raise HTTPException(400, "The selected file is not a valid PDF.")
     (OUTPUT / job_id).mkdir(parents=True, exist_ok=True)
     (OUTPUT / job_id / "manifest.json").write_text(json.dumps({
-        "job_id": job_id, "status": "queued", "file_name": Path(file.filename).name,
+        "job_id": job_id, "status": "queued", "file_name": original_name,
         "page_count": None, "documents": [], "exceptions": [],
     }), encoding="utf-8")
-    background.add_task(_run, job_id, target)
+    background.add_task(_run, job_id, target, original_name)
     return {"job_id": job_id, "status": "queued"}
 
 

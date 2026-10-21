@@ -117,9 +117,9 @@ $('#empty-upload').addEventListener('click', openUpload);
 $('#demo-preview')?.addEventListener('click', () => useDemoFallback('Demo preview · Sample data only; no documents were uploaded or processed.'));
 $('#cancel-upload').addEventListener('click', () => uploadDialog.close());
 $('#refresh').addEventListener('click', refreshJobs);
-$('#dropzone').addEventListener('click', (event) => {
-  if (event.target !== fileInput) { event.preventDefault(); fileInput.click(); }
-});
+// The dropzone is a label for the file input. Let the browser's native label
+// activation open the picker; manually calling input.click() here can be
+// blocked by some browsers when the input itself is hidden.
 fileInput.addEventListener('change', () => selectFile(fileInput.files[0]));
 function selectFile(file) {
   if (!file) return;
@@ -141,13 +141,13 @@ $('#submit-upload').addEventListener('click', async () => {
   if (!selectedFile) return;
   const button = $('#submit-upload');
   button.disabled = true;
-  button.textContent = 'Uploading…';
+  button.innerHTML = 'Uploading…';
   try {
     if (forceDemoMode) throw new Error('Demo preview is view-only. The selected file was not processed.');
     const data = new FormData();
     data.append('file', selectedFile);
     const response = await fetch(apiUrl('/api/jobs'), { method: 'POST', body: data });
-    const result = await response.json();
+    const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.detail || 'Upload failed');
     uploadDialog.close();
     await refreshJobs();
