@@ -11,6 +11,7 @@ from typing import Any
 from fastapi import BackgroundTasks, FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 
 from .processing import MAX_UPLOAD_BYTES, process_pdf
 
@@ -23,7 +24,18 @@ INCOMING.mkdir(parents=True, exist_ok=True)
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title="Mortgage Desk", version="1.0.0", description="Local-first mortgage document package processing.")
-app.mount("/static", StaticFiles(directory=FRONTEND / "assets"), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[origin.strip() for origin in os.getenv(
+        "MORTGAGE_FRONTEND_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000",
+    ).split(",") if origin.strip()],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
+)
+app.mount("/assets", StaticFiles(directory=FRONTEND / "assets"), name="assets")
+app.mount("/static", StaticFiles(directory=FRONTEND / "assets"), name="static-compat")
 
 
 def _load_jobs() -> list[dict[str, Any]]:

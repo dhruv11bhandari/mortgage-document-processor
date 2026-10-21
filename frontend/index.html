@@ -1,39 +1,437 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f6f4"><title>Mortgage Desk — Document operations</title>
-  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/static/styles.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff"><meta name="mortgage-api-base" content=""><title>Mortgage Desk — Document operations</title>
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#000;--ink:#f5f5f7;--mute:#8c8c95;--line:rgba(255,255,255,.09);--glass:rgba(10,10,10,.65);--a:#6ee7b7;--b:#60a5fa;--c:#a78bfa;--grad:linear-gradient(120deg,var(--a),var(--b) 55%,var(--c));color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;background:#000}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 Inter,system-ui,sans-serif;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+/* ================= INTRO: pure white. The mouse drags black ink across it, and the ink fades back to white ================= */
+#intro{position:relative;height:100vh;height:100svh;z-index:20;overflow:hidden}
+.layers,.zoom{position:absolute;inset:0}
+.layers{clip-path:circle(150vmax at 50% 50%)}
+.zoom{transform-origin:50% 50%;will-change:transform;isolation:isolate}
+.layer{--fg:#000;--bg2:#fff;--dot:rgba(0,0,0,.1);--ln:rgba(0,0,0,.25);position:absolute;inset:0;padding:28px clamp(20px,4vw,56px) 30px;display:flex;flex-direction:column;justify-content:space-between;color:var(--fg);background-color:var(--bg2);background-image:radial-gradient(circle,var(--dot) 1px,transparent 1.6px);background-size:30px 30px;font-family:Inter,system-ui,sans-serif}
+/* white strokes on this canvas use "difference" blending: white page becomes black, black text becomes white */
+#trail{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:difference;pointer-events:none;z-index:4}
+.i-top,.i-bottom{display:flex;justify-content:space-between;align-items:center;font-size:12px;letter-spacing:.16em;font-weight:600}
+.i-brand{display:flex;align-items:center;gap:12px;font:700 18px 'Space Grotesk',sans-serif;letter-spacing:0}
+.i-brand b{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--fg);color:var(--bg2);font-size:16px}
+.i-brand span{font-weight:500;opacity:.55}
+.i-center{max-width:1180px}
+.i-eyebrow{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:600;letter-spacing:.24em}
+.i-eyebrow i{width:34px;height:1px;background:var(--fg)}
+.i-title{font:700 clamp(42px,8vw,118px)/.96 'Space Grotesk',sans-serif;letter-spacing:-.045em;margin:20px 0 24px;max-width:12em}
+.i-title em{font-style:normal}
+.i-title em .w{color:transparent;-webkit-text-stroke:clamp(1.5px,.18vw,3px) var(--fg)}
+.wm{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .06em .14em;margin:0 -.06em -.14em}
+.w{display:inline-block;will-change:transform}
+.i-copy{max-width:580px;font-size:clamp(15px,1.5vw,19px);line-height:1.55;opacity:.72}
+.i-steps{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
+.i-steps span{border:1px solid var(--ln);border-radius:99px;padding:8px 16px;font-size:13px;font-weight:500;display:inline-flex;gap:8px}
+.i-steps b{font-family:'Space Grotesk';opacity:.5}
+.i-btn{margin-top:30px;display:inline-flex;gap:10px;align-items:center;font:600 14px Inter;padding:15px 26px;border-radius:99px;border:0;cursor:pointer;background:var(--fg);color:var(--bg2);transition:transform .3s;position:relative;z-index:2}
+.i-btn:hover{transform:translateY(-3px)}
+.i-hint{opacity:.55}
+.i-scroll{display:flex;align-items:center;gap:12px;opacity:.8}
+.i-scroll i{width:1px;height:34px;background:var(--fg);animation:drip 2s ease-in-out infinite}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+.ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;border:1.5px solid rgba(255,255,255,.85);box-shadow:0 0 50px 2px rgba(255,255,255,.25),inset 0 0 50px rgba(255,255,255,.12);opacity:0;z-index:3}
+.reveal{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:14px;text-align:center;pointer-events:none;opacity:0;padding:20px;z-index:2}
+.reveal .section-kicker{color:var(--a)}
+.reveal h2{font:700 clamp(36px,7vw,96px)/1 'Space Grotesk',sans-serif;letter-spacing:-.04em;margin:0}
+.reveal h2 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.reveal p{color:var(--mute)}
+.cursor{position:fixed;left:0;top:0;width:38px;height:38px;margin:-19px 0 0 -19px;border:1.5px solid #fff;border-radius:50%;mix-blend-mode:difference;pointer-events:none;z-index:9999}
+
+/* ================= DASHBOARD (full page, pure black) ================= */
+.brand{display:flex;gap:12px;align-items:center;color:var(--ink);text-decoration:none;font:700 18px 'Space Grotesk',sans-serif}
+.brand small{display:block;font:500 9px Inter;letter-spacing:.22em;color:var(--mute);margin-top:2px}
+.brand-light{font-weight:500;color:var(--mute)}
+.brand-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--grad);color:#000;font-weight:700;box-shadow:0 0 28px rgba(96,165,250,.45)}
+.section-kicker,.eyebrow{font:600 10px Inter;letter-spacing:.2em;color:var(--mute)}
+.top-nav{display:flex;gap:6px;margin-left:36px;margin-right:auto}
+.top-nav a{display:flex;gap:8px;align-items:center;padding:9px 14px;border-radius:12px;color:var(--mute);text-decoration:none;transition:.25s;font-size:14px}
+.top-nav a:hover{color:var(--ink);background:rgba(255,255,255,.06)}
+.top-nav a.active{color:var(--ink);background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px var(--line)}
+.top-nav b{font-size:11px;background:var(--grad);color:#000;border-radius:99px;padding:1px 8px}
+.avatar,.user-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--grad);color:#000;font:700 12px Inter}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--a);display:inline-block;box-shadow:0 0 0 0 rgba(110,231,183,.7);animation:ping 2s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 9px rgba(110,231,183,0)}100%{box-shadow:0 0 0 0 rgba(110,231,183,0)}}
+.main{padding:0 clamp(20px,5vw,72px) 40px;position:relative;z-index:2;perspective:1400px}
+.topbar{display:flex;align-items:center;height:92px;color:var(--mute);font-size:13px}
+.top-actions{display:flex;align-items:center;gap:14px}.top-divider{width:1px;height:20px;background:var(--line)}
+.welcome{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:36px 0 34px;flex-wrap:wrap}
+.eyebrow{display:flex;align-items:center;gap:10px;color:var(--a)}
+.eyebrow span{width:28px;height:1px;background:var(--a)}
+.h-main{font:700 clamp(34px,5.4vw,66px)/1.02 'Space Grotesk',sans-serif;letter-spacing:-.03em;margin:14px 0;transform-origin:0 100%}
+.h-main em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200%;animation:flow 6s linear infinite}
+@keyframes flow{to{background-position:200%}}
+.welcome p{color:var(--mute);font-size:17px;max-width:520px}
+.button{font:600 14px Inter;border:0;border-radius:14px;padding:13px 22px;cursor:pointer;color:var(--ink);display:inline-flex;gap:8px;align-items:center;transition:box-shadow .3s,filter .3s;position:relative;will-change:transform}
+.button.primary{background:var(--grad);background-size:200%;color:#000;box-shadow:0 10px 40px -8px rgba(96,165,250,.7);animation:flow 5s linear infinite}
+.button.primary:hover{box-shadow:0 14px 56px -6px rgba(167,139,250,.9)}
+.button.primary:disabled{filter:grayscale(1) brightness(.6);cursor:not-allowed;box-shadow:none;animation:none}
+.button.secondary,.button.ghost{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px var(--line)}
+.text-button{background:none;border:0;color:var(--b);cursor:pointer;font:600 13px Inter}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:18px;margin-bottom:22px}
+.metric-card,.panel{background:var(--glass);border:1px solid var(--line);border-radius:22px;backdrop-filter:blur(18px);position:relative;overflow:hidden;transform-style:preserve-3d;will-change:transform}
+.metric-card{padding:22px}
+.metric-card::before,.panel::before{content:"";position:absolute;inset:0;background:radial-gradient(380px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.09),transparent 55%);opacity:0;transition:opacity .3s;pointer-events:none}
+.metric-card:hover::before,.panel:hover::before{opacity:1}
+.metric-top{display:flex;justify-content:space-between;font:600 10px Inter;letter-spacing:.16em;color:var(--mute)}
+.metric-value{font:700 46px 'Space Grotesk',sans-serif;margin:14px 0 4px;letter-spacing:-.03em;transform:translateZ(40px)}
+.mode-value{font-size:30px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-top:22px}
+.metric-note{color:var(--mute);font-size:13px;display:flex;gap:8px;align-items:center}
+.accent-card{border-color:rgba(110,231,183,.3);box-shadow:0 0 60px -20px rgba(110,231,183,.5)}
+.content-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:22px}
+.panel{padding:26px}
+.panel-heading{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+h2{font:700 22px 'Space Grotesk',sans-serif;margin-top:6px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font:600 10px Inter;letter-spacing:.16em;color:var(--mute);text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:16px 12px;border-bottom:1px solid var(--line)}
+tbody tr{transition:background .25s}tbody tr:hover{background:rgba(255,255,255,.05)}
+.loading-row{text-align:center;color:var(--mute)}
+.spinner{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--a);display:inline-block;vertical-align:-3px;animation:spin .8s linear infinite;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pill,.status,.badge{display:inline-block;padding:3px 11px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(110,231,183,.12);color:var(--a);border:1px solid rgba(110,231,183,.3)}
+.empty-state{text-align:center;padding:50px 10px}.empty-state[hidden]{display:none}
+.empty-icon{font-size:44px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-12px) rotate(6deg)}}
+.empty-state h3{font:700 20px 'Space Grotesk';margin:10px 0 6px}.empty-state p{color:var(--mute);margin-bottom:18px}
+.steps{display:grid;gap:18px}.step{display:flex;gap:14px}
+.step-num{font:700 13px 'Space Grotesk';width:38px;height:38px;flex:none;border-radius:12px;display:grid;place-items:center;border:1px solid rgba(96,165,250,.4);color:var(--b);background:rgba(96,165,250,.08)}
+.step p{color:var(--mute);font-size:13px}
+.notice{display:flex;gap:10px;margin-top:22px;padding:14px;border-radius:14px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);font-size:12.5px;color:#c9c3ee}
+footer{margin-top:34px;color:var(--mute);font-size:12px;display:flex;gap:8px}.footer-right{margin-left:auto}
+dialog{margin:auto;border:1px solid var(--line);border-radius:26px;background:rgba(5,5,5,.94);backdrop-filter:blur(28px);color:var(--ink);padding:34px;width:min(520px,92vw);max-height:90vh;overflow:auto;box-shadow:0 40px 120px -20px rgba(255,255,255,.08)}
+dialog::backdrop{background:rgba(0,0,0,.78);backdrop-filter:blur(8px)}
+.modal-close{position:absolute;top:14px;right:14px}.modal-close button{background:rgba(255,255,255,.07);border:0;color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
+.modal-mark{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--grad);color:#000;font-size:24px;margin-bottom:16px}
+.modal-copy{color:var(--mute);margin:8px 0 20px}
+.dropzone{display:grid;gap:6px;justify-items:center;text-align:center;padding:34px 16px;border-radius:20px;border:1.5px dashed rgba(96,165,250,.45);background:rgba(96,165,250,.05);cursor:pointer;transition:.3s}
+.dropzone:hover,.dropzone.drag{background:rgba(96,165,250,.14);border-color:var(--a);transform:scale(1.015)}
+.dropzone small{color:var(--mute)}.upload-icon{font-size:26px;color:var(--a)}
+.selected-file,.upload-error{margin-top:14px;padding:12px;border-radius:12px;font-size:13px;background:rgba(255,255,255,.05)}
+.upload-error{color:#fca5a5;background:rgba(248,113,113,.1)}
+[hidden]{display:none!important}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
+.privacy-note{text-align:center;color:var(--mute);font-size:12px;margin-top:16px}
+.demo-banner{margin:0 0 18px;padding:13px 16px;border:1px solid rgba(96,165,250,.32);border-radius:14px;background:rgba(96,165,250,.1);color:#bfdbfe;font-size:13px;line-height:1.5}
+.status-pill{display:inline-block;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(110,231,183,.12);color:var(--a);border:1px solid rgba(110,231,183,.3);white-space:nowrap}
+.status-pill.attention,.status-pill.demo{background:rgba(96,165,250,.12);color:#bfdbfe;border-color:rgba(96,165,250,.3)}
+.status-pill.failed{background:rgba(248,113,113,.12);color:#fca5a5;border-color:rgba(248,113,113,.3)}
+.demo-tag,.demo-only{color:#93c5fd;font-size:10px;font-weight:600;letter-spacing:.1em}
+.demo-only{white-space:nowrap;letter-spacing:0}
+.demo-disclaimer{margin:14px 0;padding:12px 14px;border-radius:12px;background:rgba(96,165,250,.1);color:#bfdbfe;font-size:12px;line-height:1.5}
+[hidden]{display:none!important}
+@media(max-width:900px){.content-grid{grid-template-columns:1fr}.i-tag,.top-nav a:first-child,.brand small{display:none}.top-nav{margin-left:14px}}
+@media(pointer:coarse){.cursor{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
 </head>
 <body>
-  <aside class="sidebar">
-    <a class="brand" href="#"><span class="brand-icon">M</span><span>Mortgage<span class="brand-light">Desk</span><small>DOCUMENT OPERATIONS</small></span></a>
-    <div class="nav-label">WORKSPACE</div><a class="nav-item active" href="#overview"><span>▦</span> Overview</a><a class="nav-item" href="#packages"><span>▤</span> Packages <b id="nav-count">0</b></a>
-    <div class="side-bottom"><div class="local-card"><span class="status-dot"></span><div><strong>Private workspace</strong><small>Files stay on this device</small></div></div><div class="profile"><div class="avatar">MD</div><div><strong>Mortgage Desk</strong><small>Local instance</small></div><span class="more">···</span></div></div>
-  </aside>
-  <main class="main" id="overview">
-    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> Overview</div><div class="top-actions"><span class="today" id="today"></span><span class="top-divider"></span><div class="user-avatar">D</div></div></header>
-    <section class="welcome"><div><div class="eyebrow"><span></span> DOCUMENT OPERATIONS</div><h1>Good morning. <em>Let's get organized.</em></h1><p>Turn mortgage packages into clear, review-ready document sets.</p></div><button class="button primary" id="new-package"><span>＋</span> New package</button></section>
-    <section class="metrics" aria-label="Workspace summary">
-      <article class="metric-card"><div class="metric-top"><span>PACKAGES PROCESSED</span><span class="metric-symbol">▤</span></div><div class="metric-value" id="metric-packages">—</div><div class="metric-note">In this workspace</div></article>
-      <article class="metric-card"><div class="metric-top"><span>PAGES REVIEWED</span><span class="metric-symbol">▧</span></div><div class="metric-value" id="metric-pages">—</div><div class="metric-note">Across all packages</div></article>
-      <article class="metric-card"><div class="metric-top"><span>NEEDS ATTENTION</span><span class="metric-symbol warm">◉</span></div><div class="metric-value" id="metric-attention">—</div><div class="metric-note">Flags for human review</div></article>
-      <article class="metric-card accent-card"><div class="metric-top"><span>PROCESSING MODE</span><span class="lock">⌑</span></div><div class="metric-value mode-value">On-device</div><div class="metric-note"><span class="status-dot"></span> Documents remain local</div></article>
-    </section>
-    <section class="content-grid" id="packages">
-      <div class="panel package-panel"><div class="panel-heading"><div><div class="section-kicker">YOUR WORKSPACE</div><h2>Recent packages</h2></div><button class="text-button" id="refresh">Refresh <span>↻</span></button></div>
-        <div class="table-wrap"><table><thead><tr><th>PACKAGE</th><th>PAGES</th><th>DOCUMENTS</th><th>STATUS</th><th></th></tr></thead><tbody id="job-list"><tr><td colspan="5" class="loading-row"><span class="spinner"></span> Loading workspace…</td></tr></tbody></table></div>
-        <div class="empty-state" id="empty-state" hidden><div class="empty-icon">▤</div><h3>Your workspace is ready</h3><p>Upload a mortgage package to identify and organize its documents.</p><button class="button primary" id="empty-upload">Upload first package</button></div>
+<canvas id="bg"></canvas>
+<div class="cursor" id="cursor"></div>
+
+<!-- ============ INTRO ============ -->
+<section id="intro" aria-label="Introduction">
+  <div class="layers">
+    <div class="zoom">
+      <div class="layer">
+        <div class="i-top"><span class="i-brand"><b>M</b>Mortgage<span>Desk</span></span><span class="i-tag">LOCAL-FIRST · ON-DEVICE</span></div>
+        <div class="i-center">
+          <div class="i-eyebrow"><i></i>WHAT THIS IS</div>
+          <h1 class="i-title">Mortgage packages, <em>made clear.</em></h1>
+          <p class="i-copy">Upload one big PDF. Mortgage Desk finds every document inside it, groups the pages by type, flags what needs a human eye, and hands back an organized, review-ready set. Nothing ever leaves your device.</p>
+          <div class="i-steps"><span><b>01</b> Upload</span><span><b>02</b> Classify</span><span><b>03</b> Export</span></div>
+          <button class="i-btn" data-enter>Enter workspace <span>↓</span></button>
+        </div>
+        <div class="i-bottom"><span class="i-hint">MOVE YOUR MOUSE · DRAG THE DARK ACROSS THE PAGE</span><span class="i-scroll">SCROLL TO ENTER <i></i></span></div>
       </div>
-      <aside class="panel side-panel"><div class="panel-heading"><div><div class="section-kicker">HOW IT WORKS</div><h2>From package to clarity</h2></div></div>
-        <div class="steps"><div class="step"><span class="step-num">01</span><div><strong>Upload a package</strong><p>Choose a PDF. Processing runs on this device.</p></div></div><div class="step"><span class="step-num">02</span><div><strong>Review detected docs</strong><p>Pages are grouped by document type with source references.</p></div></div><div class="step"><span class="step-num">03</span><div><strong>Download your set</strong><p>Export organized PDFs and a review manifest.</p></div></div></div>
-        <div class="notice"><span>ⓘ</span><p>Classification is an assistive starting point. Review all results before making lending decisions.</p></div>
-      </aside>
-    </section>
-    <footer>Mortgage Desk <span>•</span> Local-first document processing <span class="footer-right">Built for careful review</span></footer>
-  </main>
-  <dialog id="upload-dialog"><form method="dialog" class="modal-close"><button aria-label="Close">×</button></form><div class="modal-mark">↑</div><div class="section-kicker">NEW PACKAGE</div><h2>Upload mortgage package</h2><p class="modal-copy">Select a PDF package to classify and organize. Your file is processed locally.</p><label class="dropzone" id="dropzone"><input type="file" id="file-input" accept="application/pdf,.pdf" hidden><span class="upload-icon">↑</span><strong>Drop your PDF here, or <u>browse files</u></strong><small>PDF only · Up to 50 MB · Up to 2,000 pages</small></label><div class="selected-file" id="selected-file" hidden></div><div class="upload-error" id="upload-error" hidden></div><div class="modal-actions"><button class="button secondary" id="cancel-upload">Cancel</button><button class="button primary" id="submit-upload" disabled>Process package <span>→</span></button></div><p class="privacy-note">⌑ &nbsp; Secure by design. Files never leave this device.</p></dialog>
-  <dialog id="detail-dialog"><form method="dialog" class="modal-close"><button aria-label="Close">×</button></form><div id="detail-content"></div></dialog>
-  <script src="/static/app.js" defer></script>
-</body></html>
+      <canvas id="trail"></canvas>
+    </div>
+  </div>
+  <div class="ring"></div>
+  <div class="reveal"><div class="section-kicker">YOUR WORKSPACE</div><h2>Welcome to <span>the desk.</span></h2><p>Keep scrolling</p></div>
+</section>
+
+<main class="main" id="overview">
+  <header class="topbar">
+    <a class="brand" href="#overview"><span class="brand-icon">M</span><span>Mortgage<span class="brand-light">Desk</span><small>DOCUMENT OPERATIONS</small></span></a>
+    <nav class="top-nav"><a class="active" href="#overview">Overview</a><a href="#packages">Packages <b id="nav-count">0</b></a></nav>
+    <div class="top-actions"><span class="today" id="today"></span><span class="top-divider"></span><div class="user-avatar">D</div></div>
+  </header>
+  <section class="welcome"><div><div class="eyebrow"><span></span> DOCUMENT OPERATIONS</div><h1 class="h-main">Good morning. <em>Let’s get organized.</em></h1><p>Turn mortgage packages into clear, review-ready document sets.</p></div><button class="button primary magnetic" id="new-package"><span>＋</span> New package</button></section>
+  <section class="metrics" aria-label="Workspace summary">
+    <article class="metric-card tilt"><div class="metric-top"><span>PACKAGES PROCESSED</span><span class="metric-symbol">▤</span></div><div class="metric-value" id="metric-packages">—</div><div class="metric-note">In this workspace</div></article>
+    <article class="metric-card tilt"><div class="metric-top"><span>PAGES REVIEWED</span><span class="metric-symbol">▧</span></div><div class="metric-value" id="metric-pages">—</div><div class="metric-note">Across all packages</div></article>
+    <article class="metric-card tilt"><div class="metric-top"><span>NEEDS ATTENTION</span><span class="metric-symbol warm">◉</span></div><div class="metric-value" id="metric-attention">—</div><div class="metric-note">Flags for human review</div></article>
+    <article class="metric-card tilt accent-card"><div class="metric-top"><span>PROCESSING MODE</span><span class="lock">⌑</span></div><div class="metric-value mode-value">On-device</div><div class="metric-note"><span class="status-dot"></span> Documents remain local</div></article>
+  </section>
+  <section class="content-grid" id="packages">
+    <div class="panel package-panel tilt soft"><div class="panel-heading"><div><div class="section-kicker">YOUR WORKSPACE</div><h2>Recent packages</h2></div><button class="text-button" id="refresh">Refresh <span>↻</span></button></div>
+      <div class="table-wrap"><table><thead><tr><th>PACKAGE</th><th>PAGES</th><th>DOCUMENTS</th><th>STATUS</th><th></th></tr></thead><tbody id="job-list"><tr><td colspan="5" class="loading-row"><span class="spinner"></span> Loading workspace…</td></tr></tbody></table></div>
+      <div class="empty-state" id="empty-state" hidden><div class="empty-icon">▤</div><h3>Your workspace is ready</h3><p>Upload a mortgage package to identify and organize its documents.</p><button class="button primary magnetic" id="empty-upload">Upload first package</button><button class="button ghost" id="demo-preview">View demo workspace</button></div>
+    </div>
+    <aside class="panel side-panel tilt soft"><div class="panel-heading"><div><div class="section-kicker">HOW IT WORKS</div><h2>From package to clarity</h2></div></div>
+      <div class="steps"><div class="step"><span class="step-num">01</span><div><strong>Upload a package</strong><p>Choose a PDF. Processing runs on this device.</p></div></div><div class="step"><span class="step-num">02</span><div><strong>Review detected docs</strong><p>Pages are grouped by document type with source references.</p></div></div><div class="step"><span class="step-num">03</span><div><strong>Download your set</strong><p>Export organized PDFs and a review manifest.</p></div></div></div>
+      <div class="notice"><span>ⓘ</span><p>Classification is an assistive starting point. Review all results before making lending decisions.</p></div>
+    </aside>
+  </section>
+  <footer>Mortgage Desk <span>•</span> Local-first document processing <span class="footer-right">Built for careful review</span></footer>
+</main>
+
+<dialog id="upload-dialog"><form method="dialog" class="modal-close"><button aria-label="Close">×</button></form><div class="modal-mark">↑</div><div class="section-kicker">NEW PACKAGE</div><h2>Upload mortgage package</h2><p class="modal-copy">Select a PDF package to classify and organize. Your file is processed locally.</p><label class="dropzone" id="dropzone"><input type="file" id="file-input" accept="application/pdf,.pdf" hidden><span class="upload-icon">↑</span><strong>Drop your PDF here, or <u>browse files</u></strong><small>PDF only · Up to 50 MB · Up to 2,000 pages</small></label><div class="selected-file" id="selected-file" hidden></div><div class="upload-error" id="upload-error" hidden></div><div class="modal-actions"><button class="button secondary" id="cancel-upload">Cancel</button><button class="button primary" id="submit-upload" disabled>Process package <span>→</span></button></div><p class="privacy-note">⌑ &nbsp; Secure by design. Files never leave this device.</p></dialog>
+<dialog id="detail-dialog"><form method="dialog" class="modal-close"><button aria-label="Close">×</button></form><div id="detail-content"></div></dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* Motion libraries enhance the presentation but are not required for the workspace. */
+if (!window.gsap || !window.ScrollTrigger) {
+  const timeline = { to(){return this}, from(){return this}, fromTo(){return this} };
+  window.gsap = { registerPlugin(){}, ticker:{add(){}}, set(){}, quickTo(){return ()=>{}}, to(){return timeline}, from(){return timeline}, fromTo(){return timeline}, timeline(){return timeline} };
+  window.ScrollTrigger = { refresh(){} };
+  document.documentElement.classList.add('motion-fallback');
+  document.querySelectorAll('[data-enter]').forEach((button) => button.addEventListener('click', () => {
+    document.getElementById('overview').scrollIntoView({behavior:'smooth'});
+  }));
+}
+</script>
+<script>
+(()=>{
+gsap.registerPlugin(ScrollTrigger);
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fine=matchMedia('(hover:hover) and (pointer:fine)').matches;
+const mouse={x:0,y:0};
+const PIN=1.7;                                   // intro pin length, in viewport heights
+const stage={z:reduce?10:15,s:reduce?1:.35};     // 3D scene "fly-in" state, driven by scroll
+addEventListener('pointermove',e=>{mouse.x=e.clientX/innerWidth*2-1;mouse.y=e.clientY/innerHeight*2-1});
+
+/* ---------- THREE.JS: helix of floating documents + particle field ---------- */
+try{
+const canvas=document.getElementById('bg');
+const R=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));
+const S=new THREE.Scene(),C=new THREE.PerspectiveCamera(55,1,.1,100);C.position.z=stage.z;
+const G=new THREE.Group();S.add(G);
+const cols=[0x6ee7b7,0x60a5fa,0xa78bfa],docs=[],N=18;
+const pg=new THREE.PlaneGeometry(1.5,2),eg=new THREE.EdgesGeometry(pg);
+for(let i=0;i<N;i++){
+  const col=cols[i%3],d=new THREE.Group();
+  d.add(new THREE.Mesh(pg,new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.07,side:2,depthWrite:false})));
+  d.add(new THREE.LineSegments(eg,new THREE.LineBasicMaterial({color:col,transparent:true,opacity:.6})));
+  for(let k=0;k<5;k++){
+    const l=new THREE.Mesh(new THREE.PlaneGeometry(1.1-(k%2)*.4,.05),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.2}));
+    l.position.set(-(k%2)*.2,.6-k*.25,.01);d.add(l);
+  }
+  const a=i*.62;
+  d.position.set(Math.cos(a)*5.5,(i-N/2)*.75,Math.sin(a)*5.5-2);
+  d.userData={a,ph:Math.random()*6.28};
+  G.add(d);docs.push(d);
+}
+const pc=700,pa=new Float32Array(pc*3);
+for(let i=0;i<pc*3;i++)pa[i]=(Math.random()-.5)*40;
+const pgeo=new THREE.BufferGeometry();pgeo.setAttribute('position',new THREE.BufferAttribute(pa,3));
+const pts=new THREE.Points(pgeo,new THREE.PointsMaterial({size:.045,color:0xffffff,transparent:true,opacity:.45}));
+S.add(pts);
+const core=new THREE.Mesh(new THREE.IcosahedronGeometry(1.1,1),new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:.22}));
+G.add(core);G.position.x=3;
+function size(){R.setSize(innerWidth,innerHeight,false);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix();G.position.x=innerWidth<900?0:3}
+addEventListener('resize',size);size();
+let sy=0;addEventListener('scroll',()=>sy=scrollY,{passive:true});
+const clock=new THREE.Clock();
+gsap.ticker.add(()=>{
+  const t=clock.getElapsedTime(),se=Math.max(0,sy-innerHeight*PIN);
+  if(!reduce){
+    G.rotation.y=t*.12;core.rotation.x=t*.4;core.rotation.y=t*.3;
+    docs.forEach(d=>{d.position.y+=Math.sin(t+d.userData.ph)*.0015;d.rotation.y=-G.rotation.y*.6+Math.sin(t*.5+d.userData.ph)*.3;d.rotation.z=Math.sin(t*.4+d.userData.ph)*.12});
+    pts.rotation.y=t*.01;
+  }
+  G.scale.setScalar(stage.s);
+  C.position.z=stage.z;
+  C.position.x+=(mouse.x*1.2-C.position.x)*.04;
+  C.position.y+=(-mouse.y*.8-se*.004-C.position.y)*.04;
+  C.lookAt(0,-se*.002,0);
+  R.render(S,C);
+});
+}catch(e){console.warn('WebGL unavailable',e)}
+
+/* ---------- custom cursor ring ---------- */
+const cur=document.getElementById('cursor');
+if(fine){
+  gsap.set(cur,{autoAlpha:0});
+  const cx=gsap.quickTo(cur,'x',{duration:.25,ease:'power3'}),cy=gsap.quickTo(cur,'y',{duration:.25,ease:'power3'});
+  let seen=false;
+  addEventListener('pointermove',e=>{if(!seen){seen=true;gsap.set(cur,{x:e.clientX,y:e.clientY});gsap.to(cur,{autoAlpha:1,duration:.3})}cx(e.clientX);cy(e.clientY)});
+  addEventListener('pointerover',e=>gsap.to(cur,{scale:e.target.closest&&e.target.closest('a,button,label,.tilt')?1.8:1,duration:.3,ease:'power3'}));
+}else cur.remove();
+
+/* ---------- INTRO: split headline into words ---------- */
+const intro=document.getElementById('intro'),zoom=intro.querySelector('.zoom'),base=intro.querySelector('.layer');
+const layers=intro.querySelector('.layers'),ring=intro.querySelector('.ring');
+function split(node){
+  [...node.childNodes].forEach(n=>{
+    if(n.nodeType===3){
+      const f=document.createDocumentFragment();
+      n.textContent.split(/(\s+)/).forEach(t=>{
+        if(!t)return;
+        if(/^\s+$/.test(t)){f.append(' ');return}
+        const m=document.createElement('span');m.className='wm';
+        const w=document.createElement('span');w.className='w';w.textContent=t;m.append(w);f.append(m);
+      });
+      n.replaceWith(f);
+    }else if(n.nodeType===1)split(n);
+  });
+}
+base.querySelectorAll('.i-title').forEach(split);
+if(!fine)base.querySelectorAll('.i-hint').forEach(h=>h.textContent='SWIPE UP TO ENTER');
+
+document.querySelectorAll('[data-enter]').forEach(b=>b.addEventListener('click',()=>{
+  const m=document.getElementById('overview');
+  scrollTo({top:m.getBoundingClientRect().top+scrollY,behavior:'smooth'});
+}));
+
+/* ---------- INTRO INK TRAIL: a lagging "drag" head paints black, the ink shrinks away and the page turns white again ---------- */
+if(fine&&!reduce){
+  const tc=document.getElementById('trail'),ctx=tc.getContext('2d');
+  const LIFE=1700,MAXPTS=900;
+  let dpr=1,W=0,H=0;
+  const fit=()=>{dpr=Math.min(devicePixelRatio||1,2);W=intro.clientWidth;H=intro.clientHeight;tc.width=W*dpr;tc.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)};
+  fit();addEventListener('resize',fit);
+  const P={x:0,y:0,on:false},head={x:0,y:0,init:false};
+  let prev={x:0,y:0},dots=[],dirty=false;
+  addEventListener('pointermove',e=>{P.x=e.clientX;P.y=e.clientY;P.on=true;if(!head.init){head.x=P.x;head.y=P.y;prev.x=P.x;prev.y=P.y;head.init=true}});
+  addEventListener('pointerdown',e=>{P.x=e.clientX;P.y=e.clientY;P.on=true});
+  document.addEventListener('pointerleave',()=>{P.on=false});
+  document.addEventListener('mouseleave',()=>{P.on=false});
+  gsap.ticker.add(()=>{
+    const now=performance.now();
+    // the head chases the pointer with drag, so quick movement leaves a fatter, stretchier stroke
+    if(head.init&&P.on&&scrollY<8){
+      const dx=P.x-head.x,dy=P.y-head.y,d=Math.hypot(dx,dy);
+      head.x+=dx*.15;head.y+=dy*.15;
+      const step=Math.hypot(head.x-prev.x,head.y-prev.y);
+      if(step>.4){
+        const r=Math.min(64,16+d*.28),n=Math.max(1,Math.ceil(step/4));
+        for(let i=1;i<=n;i++){const k=i/n;dots.push({x:prev.x+(head.x-prev.x)*k,y:prev.y+(head.y-prev.y)*k,r,t:now})}
+        prev.x=head.x;prev.y=head.y;
+        if(dots.length>MAXPTS)dots.splice(0,dots.length-MAXPTS);
+      }
+    }
+    while(dots.length&&now-dots[0].t>LIFE)dots.shift();
+    if(!dots.length){if(dirty){ctx.clearRect(0,0,W,H);dirty=false}return}
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#fff';ctx.beginPath();
+    for(const p of dots){
+      const k=1-(now-p.t)/LIFE,rr=p.r*Math.pow(Math.max(k,0),.75);
+      if(rr<.5)continue;
+      ctx.moveTo(p.x+rr,p.y);ctx.arc(p.x,p.y,rr,0,6.2832);
+    }
+    ctx.fill();dirty=true;
+  });
+}
+
+/* sidebar is gone: nothing else to reveal on scroll */
+if(reduce)return;
+
+/* ---------- INTRO entrance ---------- */
+gsap.from('.i-title .w',{yPercent:120,rotate:6,duration:1.2,stagger:.07,ease:'power4.out',delay:.15});
+gsap.from('.i-top,.i-eyebrow,.i-copy,.i-steps span,.i-btn,.i-bottom',{y:24,opacity:0,duration:.9,stagger:.08,ease:'power3.out',delay:.5});
+const ip=[...document.querySelectorAll('.i-center')].map(el=>[gsap.quickTo(el,'x',{duration:.8,ease:'power3'}),gsap.quickTo(el,'y',{duration:.8,ease:'power3'})]);
+addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;ip.forEach(([x,y])=>{x((e.clientX/innerWidth-.5)*-18);y((e.clientY/innerHeight-.5)*-12)})});
+
+/* ---------- SCROLL: the intro zooms away through an iris into the 3D scene, then the app rises ---------- */
+const iris={p:0};
+const paintIris=()=>{
+  const r=Math.hypot(innerWidth,innerHeight)/2*1.02*(1-iris.p);
+  layers.style.clipPath=`circle(${r}px at 50% 50%)`;
+  ring.style.width=ring.style.height=r*2+'px';
+  ring.style.opacity=(iris.p>.005&&iris.p<.995)?1:0;
+};
+gsap.timeline({defaults:{ease:'none'},scrollTrigger:{trigger:'#intro',start:'top top',end:'+='+PIN*100+'%',scrub:.7,pin:true,anticipatePin:1,invalidateOnRefresh:true}})
+  .to('.i-hint,.i-scroll,.i-btn',{opacity:0,duration:1},0)
+  .to(zoom,{scale:1.8,ease:'power2.in',duration:7},0)
+  .to(iris,{p:1,ease:'power2.inOut',duration:7,onUpdate:paintIris},1.2)
+  .to(stage,{z:10,s:1,ease:'power2.out',duration:8},1)
+  .fromTo('.reveal',{opacity:0,y:40,scale:.92},{opacity:1,y:0,scale:1,ease:'power3.out',duration:2},7)
+  .to({},{duration:1});
+
+/* ---------- GSAP: dashboard entrance, triggered by scroll ---------- */
+gsap.timeline({defaults:{ease:'power4.out'},scrollTrigger:{trigger:'.main',start:'top 70%',once:true}})
+  .from('.topbar',{y:-30,opacity:0,duration:.8})
+  .from('.main .eyebrow',{x:-30,opacity:0,duration:.7},'-=.5')
+  .from('.h-main',{y:70,opacity:0,rotateX:-50,duration:1.2},'-=.5')
+  .from('.welcome p',{y:24,opacity:0,duration:.8},'-=.8')
+  .from('.welcome .button',{scale:.4,opacity:0,duration:1,ease:'elastic.out(1,.6)'},'-=.8')
+  .from('.metric-card',{y:80,opacity:0,rotateX:-35,transformPerspective:900,stagger:.1,duration:1.1},'-=.9')
+  .from('.panel',{y:80,opacity:0,rotateX:-12,transformPerspective:900,stagger:.15,duration:1.2},'-=.8')
+  .from('.step',{x:20,opacity:0,stagger:.1,duration:.7},'-=.7')
+  .from('footer',{opacity:0,duration:.8},'-=.4');
+
+/* ---------- 3D tilt + spotlight ---------- */
+document.querySelectorAll('.tilt').forEach(el=>{
+  const soft=el.classList.contains('soft'),m=soft?3:9;
+  const rx=gsap.quickTo(el,'rotationX',{duration:.5,ease:'power3'}),ry=gsap.quickTo(el,'rotationY',{duration:.5,ease:'power3'});
+  gsap.set(el,{transformPerspective:900});
+  el.addEventListener('pointermove',e=>{
+    const b=el.getBoundingClientRect(),x=(e.clientX-b.left)/b.width,y=(e.clientY-b.top)/b.height;
+    ry((x-.5)*m*2);rx((.5-y)*m*2);
+    el.style.setProperty('--mx',x*100+'%');el.style.setProperty('--my',y*100+'%');
+  });
+  el.addEventListener('pointerleave',()=>{rx(0);ry(0)});
+});
+
+/* ---------- magnetic buttons ---------- */
+document.addEventListener('pointermove',e=>{
+  document.querySelectorAll('.magnetic').forEach(b=>{
+    const r=b.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);
+    const near=Math.hypot(dx,dy)<110;
+    gsap.to(b,{x:near?dx*.3:0,y:near?dy*.3:0,duration:.5,ease:'power3.out',overwrite:'auto'});
+  });
+});
+
+/* ---------- count-up when app.js fills metrics ---------- */
+['metric-packages','metric-pages','metric-attention'].forEach(id=>{
+  const el=document.getElementById(id);let busy=false;
+  new MutationObserver(()=>{
+    if(busy)return;const n=parseInt(el.textContent.replace(/[^\d]/g,''),10);
+    if(isNaN(n))return;busy=true;const o={v:0};
+    gsap.to(o,{v:n,duration:1.6,ease:'power3.out',onUpdate:()=>el.textContent=Math.round(o.v).toLocaleString(),onComplete:()=>setTimeout(()=>busy=false,50)});
+  }).observe(el,{childList:true,characterData:true,subtree:true});
+});
+
+/* ---------- table rows animate in whenever the list renders ---------- */
+const jl=document.getElementById('job-list');
+new MutationObserver(()=>gsap.fromTo('#job-list tr:not(.animated)',{opacity:0,x:-30},{opacity:1,x:0,stagger:.06,duration:.6,ease:'power3.out',onStart(){document.querySelectorAll('#job-list tr').forEach(r=>r.classList.add('animated'))}})).observe(jl,{childList:true});
+
+/* ---------- dialogs: pop in with 3D flip ---------- */
+document.querySelectorAll('dialog').forEach(d=>{
+  new MutationObserver(()=>{if(d.open){
+    gsap.fromTo(d,{opacity:0,scale:.85,rotateX:-25,y:40,transformPerspective:1000},{opacity:1,scale:1,rotateX:0,y:0,duration:.7,ease:'back.out(1.5)'});
+    gsap.from(d.querySelectorAll('.modal-mark,.section-kicker,h2,.modal-copy,.dropzone,.modal-actions'),{y:20,opacity:0,stagger:.06,duration:.6,delay:.15,ease:'power3.out'});
+  }}).observe(d,{attributes:true,attributeFilter:['open']});
+});
+const dz=document.getElementById('dropzone');
+['dragenter','dragover'].forEach(t=>dz.addEventListener(t,()=>dz.classList.add('drag')));
+['dragleave','drop'].forEach(t=>dz.addEventListener(t,()=>dz.classList.remove('drag')));
+
+/* keep scroll positions accurate once fonts and app.js content land */
+document.fonts&&document.fonts.ready.then(()=>ScrollTrigger.refresh());
+addEventListener('load',()=>ScrollTrigger.refresh());
+})();
+</script>
+<script src="/assets/app.js" defer></script>
+</body>
+</html>

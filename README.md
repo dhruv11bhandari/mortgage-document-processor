@@ -27,6 +27,12 @@ The launcher creates `.venv` and installs the runtime dependencies on the first 
 
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000). On macOS, install Tesseract with `brew install tesseract`; on Ubuntu/Debian, use `sudo apt install tesseract-ocr`. Without Tesseract, digital PDFs still work and scanned pages are marked for review.
 
+### Run frontend and backend separately
+
+The backend serves the frontend for the one-command local setup. For separate development servers, start the API with `.venv/bin/uvicorn backend.app.main:app --reload --port 8000`, then start a static server with `cd frontend && python3 -m http.server 5173`. Open `http://127.0.0.1:5173/?api=http://127.0.0.1:8000`. The API allows these local development origins by default; set `MORTGAGE_FRONTEND_ORIGINS` to a comma-separated list when using other frontend origins.
+
+If the API is unavailable, the dashboard automatically shows clearly marked sample data. You can also open `/?demo=1` to preview the sample workspace intentionally. Demo mode never claims to process an uploaded file; uploads are disabled from the demo preview.
+
 ## Configuration
 
 | Variable | Default | Purpose |
