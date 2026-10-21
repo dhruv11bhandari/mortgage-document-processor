@@ -113,7 +113,8 @@ tbody tr{transition:background .25s}tbody tr:hover{background:rgba(255,255,255,.
 .step p{color:var(--mute);font-size:13px}
 .notice{display:flex;gap:10px;margin-top:22px;padding:14px;border-radius:14px;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);font-size:12.5px;color:#c9c3ee}
 footer{margin-top:34px;color:var(--mute);font-size:12px;display:flex;gap:8px}.footer-right{margin-left:auto}
-dialog{margin:auto;border:1px solid var(--line);border-radius:26px;background:rgba(5,5,5,.94);backdrop-filter:blur(28px);color:var(--ink);padding:34px;width:min(520px,92vw);max-height:90vh;overflow:auto;box-shadow:0 40px 120px -20px rgba(255,255,255,.08)}
+dialog{position:fixed;inset:0;margin:auto;border:1px solid var(--line);border-radius:26px;background:rgba(5,5,5,.96);backdrop-filter:blur(28px);color:var(--ink);padding:34px;width:min(520px,92vw);max-height:90vh;overflow:auto;box-shadow:0 40px 120px -20px rgba(255,255,255,.08)}
+dialog[open]{display:block;position:fixed;inset:0;margin:auto;transform:none!important;opacity:1!important;visibility:visible!important}
 dialog::backdrop{background:rgba(0,0,0,.78);backdrop-filter:blur(8px)}
 .modal-close{position:absolute;top:14px;right:14px}.modal-close button{background:rgba(255,255,255,.07);border:0;color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer}
 .modal-mark{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--grad);color:#000;font-size:24px;margin-bottom:16px}
@@ -417,13 +418,8 @@ document.addEventListener('pointermove',e=>{
 const jl=document.getElementById('job-list');
 new MutationObserver(()=>gsap.fromTo('#job-list tr:not(.animated)',{opacity:0,x:-30},{opacity:1,x:0,stagger:.06,duration:.6,ease:'power3.out',onStart(){document.querySelectorAll('#job-list tr').forEach(r=>r.classList.add('animated'))}})).observe(jl,{childList:true});
 
-/* ---------- dialogs: pop in with 3D flip ---------- */
-document.querySelectorAll('dialog').forEach(d=>{
-  new MutationObserver(()=>{if(d.open){
-    gsap.fromTo(d,{opacity:0,scale:.85,rotateX:-25,y:40,transformPerspective:1000},{opacity:1,scale:1,rotateX:0,y:0,duration:.7,ease:'back.out(1.5)'});
-    gsap.from(d.querySelectorAll('.modal-mark,.section-kicker,h2,.modal-copy,.modal-actions'),{y:20,opacity:0,stagger:.06,duration:.6,delay:.15,ease:'power3.out'});
-  }}).observe(d,{attributes:true,attributeFilter:['open']});
-});
+/* Native dialogs stay centered in the browser top layer. Avoid GSAP transforms here;
+   they could move the first-open dialog offscreen while the page is scrolling. */
 const dz=document.getElementById('dropzone');
 ['dragenter','dragover'].forEach(t=>dz.addEventListener(t,()=>dz.classList.add('drag')));
 ['dragleave','drop'].forEach(t=>dz.addEventListener(t,()=>dz.classList.remove('drag')));
