@@ -15,8 +15,11 @@ Mortgage Desk turns mortgage PDF packages into organized, review-ready document 
 
 The classifier intentionally does not call an LLM or use a trained embedding model. Its scores are keyword-match rates, not calibrated probabilities. Review the manifest and source PDFs before relying on a classification.
 
-## Run locally
+## how it looks
+<img width="2910" height="1802" alt="image" src="https://github.com/user-attachments/assets/c0cec69d-0719-40ca-b57d-6e1f3aa5b11a" />
+<img width="1184" height="1138" alt="image" src="https://github.com/user-attachments/assets/b32693f5-cda0-41fe-920d-85263721ac60" />
 
+## Run locally
 Requires Python 3.10 or later.
 
 ```bash
