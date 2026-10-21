@@ -1,200 +1,67 @@
-# Mortgage Document Package Processor
+# Mortgage Desk
 
-An end-to-end pipeline for processing large, unstructured mortgage loan PDF packages
-(up to 2,000 pages) into clean, validated, and structured outputs ready for downstream
-decisioning systems.
+Mortgage Desk turns mortgage PDF packages into organized, review-ready document groups. It combines a local web workspace with a FastAPI service and a transparent, keyword-based classifier. The app runs on your machine; uploaded documents are written under `data/` and are not sent to a hosted service.
 
+> **Review required:** classification and page grouping are assistive. They are not underwriting, compliance, or lending decisions. Confirm every result and exception with a qualified reviewer.
 
+## What it does
 
-Designed with an **LLM-last strategy** — 10 of 11 stages run entirely on free,
-open-source tools. LLM API calls are reserved only for low-confidence edge cases
-in classification (~5% of pages), keeping cost to ~$0.05 per package.
+- Accepts PDF packages up to 50 MB and 2,000 pages by default.
+- Extracts text from digital PDFs and attempts OCR for scanned pages when Tesseract is installed.
+- Identifies 1003 applications, bank statements, pay stubs, W-2s, 1040s, credit reports, appraisals, and title documents using explainable keyword evidence.
+- Groups identified pages into downloadable PDFs, preserving original page order unless page numbering is detected.
+- Produces a JSON manifest with source pages, classification confidence, and review flags for unknown pages or unavailable OCR.
+- Provides a responsive browser workspace for uploading, reviewing, and downloading results.
 
----
+The classifier intentionally does not call an LLM or use a trained embedding model. Its scores are keyword-match rates, not calibrated probabilities. Review the manifest and source PDFs before relying on a classification.
 
-## Pipeline Overview
+## Run locally
 
-| Stage | Name                    | Objective                                         | LLM? | Cost  |
-|-------|-------------------------|---------------------------------------------------|------|-------|
-| 1     | PDF Upload              | Validate file, extract metadata, assign Job ID   | No   | Free  |
-| 2     | Page Splitter           | Burst PDF into individual page images + text      | No   | Free  |
-| 3     | Scanned vs Digital      | Classify each page: text-native or image-only    | No   | Free  |
-| 4     | OCR Engine              | Extract text from scanned pages via Tesseract     | No   | Free  |
-| 5     | Text + Layout Extraction| Parse keywords, tables, dates, dollar amounts     | No   | Free  |
-| 6     | Document Classification | Identify doc type per page (3-tier hybrid)        | ~5%  | ~$0.05/pkg |
-| 7     | Page Grouping           | Cluster pages into document instances             | No   | Free  |
-| 8     | Ordering Engine         | Sort pages within each doc into correct sequence  | No   | Free  |
-| 9     | Validation Engine       | Check for missing pages, signatures, doc types   | No   | Free  |
-| 10    | Exception Reporting     | Flag anomalies with severity levels               | No   | Free  |
-| 11    | Structured Output       | Emit JSON manifest + labelled PDFs                | No   | Free  |
-
----
-
-## Classification Strategy (Stage 6)
-
-Pages are classified in three tiers, cheapest first:
-
-- **Tier 1 — Rule-Based** `(confidence ≥ 0.85)`: keyword scoring from Stage 5. Handles ~70% of pages.
-- **Tier 2 — Embedding Similarity** `(confidence 0.70–0.85)`: local `sentence-transformers` + FAISS. Handles ~25%.
-- **Tier 3 — LLM Fallback** `(confidence < 0.70)`: Claude / GPT-4o-mini with a short structured prompt. Handles ~5%.
-
----
-
-## Document Types Supported
-
-`1003_form` · `bank_stmt` · `pay_stub` · `w2` · `tax_1040` · `credit_report` · `appraisal` · `title`
-
----
-
-## Output
-
-For each processed package, the system produces:
-
-output/{job_id}/
-├── manifest.json ← structured doc inventory + exceptions
-├── bank_stmt.pdf
-├── w2.pdf
-├── pay_stub.pdf
-├── tax_1040.pdf
-├── credit_report.pdf
-├── appraisal.pdf
-├── title.pdf
-└── 1003_form.pdf
-
-**`manifest.json` structure:**
-```json
-{
-  "job_id": "uuid-here",
-  "documents": [
-    { "type": "bank_stmt", "pages": 4, "path": "output/.../bank_stmt.pdf" }
-  ],
-  "exceptions": [
-    { "type": "MISSING_SIGNATURE", "doc": "1003_form", "severity": "CRITICAL" }
-  ]
-}
-```
-
----
-
-## Exception Severity Levels
-
-| Severity   | Meaning                                              | Example                        |
-|------------|------------------------------------------------------|--------------------------------|
-| `CRITICAL` | Blocks decisioning                                   | Missing final 1003, no signature |
-| `WARNING`  | Needs human review                                   | Low OCR confidence, missing pages |
-| `INFO`     | Informational only                                   | Duplicate page removed         |
-
----
-
-## Graceful Degradation
-
-The system is designed so partial output is always preferred over a crash:
-
-- OCR fails → page flagged `LOW_OCR_CONFIDENCE`, pipeline continues
-- Page unclassifiable → labelled `UNKNOWN`, included in exceptions
-- Document group incomplete → partial output still emitted with flags
-- LLM API unavailable → falls back to Tier 2 embedding only
-- Corrupt page image → flagged `UNREADABLE`, rest of package processes normally
-- Each stage writes results to disk — a failure in Stage 8 never loses Stages 1–7
-
----
-
-## Scalability
-
-- Target: **1,000 packages/day** (~42/hour)
-- Each package: ~5–8 minutes end-to-end with 8 parallel workers
-- Horizontal scaling via **Celery + Redis** task queue
-- Each stage is stateless — add workers without code changes
-
----
-
-## Tech Stack
-
-**Core Processing**
-- `PyMuPDF (fitz)` — PDF parsing, rendering, reassembly
-- `Tesseract 5` + `pytesseract` — OCR engine
-- `OpenCV (cv2)` + `Pillow` — image pre-processing, signature detection
-- `sentence-transformers` + `FAISS` — embedding-based classification
-- `Python re` — regex extraction
-- `spaCy` *(optional)* — named entity recognition
-
-**Infrastructure**
-- `FastAPI` — REST upload endpoint
-- `Celery + Redis` — async task queue
-- `AWS S3` — file storage *(configurable to local disk)*
-- `Claude API` / `GPT-4o-mini` — LLM fallback for Stage 6 only
-
----
-
-## Installation
+Requires Python 3.10 or later.
 
 ```bash
-git clone https://github.com/your-username/mortgage-doc-processor.git
-cd mortgage-doc-processor
-pip install -r requirements.txt
+python -m venv .venv
+source .venv/bin/activate      # Windows: .venv\\Scripts\\activate
+python -m pip install -r Requirements.txt
+uvicorn mortgage_processor.api:app --reload
 ```
 
-Tesseract must be installed separately:
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000). On macOS, install Tesseract with `brew install tesseract`; on Ubuntu/Debian, use `sudo apt install tesseract-ocr`. Without Tesseract, digital PDFs still work and scanned pages are marked for review.
+
+## Configuration
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `MORTGAGE_DATA_DIR` | `./data` | Local input and output storage |
+| `MORTGAGE_MAX_UPLOAD_BYTES` | `52428800` | Upload size limit in bytes |
+| `MORTGAGE_MAX_PAGES` | `2000` | Maximum pages per PDF |
+
+The API exposes `GET /api/health`, `GET /api/jobs`, `GET /api/jobs/{job_id}`, and `POST /api/jobs` (multipart form field `file`). Documents are available through `/api/jobs/{job_id}/documents/{filename}`. Interactive API documentation is at `/docs`.
+
+## Processing flow
+
+1. Validate upload extension and size.
+2. Extract text per page and try local OCR when text is absent.
+3. Score supported document types against keyword evidence; low-evidence pages remain `unknown`.
+4. Create one PDF per detected type and a `manifest.json` for review.
+
+Output folders are isolated by job ID. Failed jobs return an error in their manifest. OCR failures are reported per page and do not stop digital-page processing.
+
+## Tests
+
 ```bash
-# Ubuntu
-sudo apt install tesseract-ocr
-
-# macOS
-brew install tesseract
+python -m pip install -e '.[dev]'
+python -m pytest
 ```
 
----
+## Project layout
 
-## Quick Start
+- `mortgage_processor/api.py` — FastAPI app and upload/job/download routes
+- `mortgage_processor/processing.py` — PDF extraction, optional OCR, grouping, and output
+- `mortgage_processor/classification.py` — deterministic classifier and supported keyword sets
+- `static/` — responsive frontend
+- `tests/` — focused classifier and page-ordering checks
 
-```python
-from pipeline.stage_01_pdf_upload import upload_package
-from pipeline.stage_02_page_splitter import split_pdf
-from pipeline.stage_03_scan_detection import classify_all_pages
-from pipeline.stage_04_ocr_engine import ocr_scanned_pages
-from pipeline.stage_05_text_extraction import extract_features
-from pipeline.stage_06_classification import classify_all
-from pipeline.stage_07_page_grouping import group_pages
-from pipeline.stage_08_ordering import order_document
-from pipeline.stage_09_validation import validate
-from pipeline.stage_10_exceptions import build_report
-from pipeline.stage_11_output import build_output
+## Privacy and operational notes
 
-pdf_path = "mortgage_package.pdf"
-output_dir = "tmp/pages"
-
-job    = upload_package(pdf_path)
-pages  = split_pdf(pdf_path, output_dir)
-pages  = classify_all_pages(pages)
-pages  = ocr_scanned_pages(pages)
-pages  = [extract_features(p) for p in pages]
-pages  = classify_all(pages)
-grouped = group_pages(pages)
-
-for doc_type in grouped:
-    grouped[doc_type] = order_document(grouped[doc_type])
-
-exceptions = validate(grouped)
-report     = build_report(exceptions)
-manifest   = build_output(job["job_id"], grouped, exceptions, pdf_path)
-
-print(manifest)
-```
-
----
-
-## Cost Summary
-
-10 of 11 stages are entirely free. LLM is only invoked for ~5% of pages in Stage 6.
-
-| Scale              | LLM Cost         |
-|--------------------|------------------|
-| 1 package          | ~$0.05           |
-| 100 packages/day   | ~$5/day          |
-| 1,000 packages/day | ~$50/day         |
-
----
-
-## Author
-
-**Dhruv Bhandari** 
+This is a local development application, not a hardened multi-user service. Keep `data/` access restricted, use trusted input PDFs, and place it behind suitable authentication and storage controls before exposing it on a network. The default local instance does not implement user accounts, retention policies, encryption-at-rest, or a durable distributed queue.
