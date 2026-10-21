@@ -24,10 +24,33 @@ def test_health_and_upload_flow(tmp_path, monkeypatch):
     result = client.get(f"/api/jobs/{job_id}")
     assert result.status_code == 200
     assert result.json()["status"] == "completed"
+    assert result.json()["file_name"] == "application.pdf"
     assert client.get(f"/api/jobs/{job_id}/documents/1003_form.pdf").status_code == 200
+
+
+def test_frontend_assets_and_local_dev_cors():
+    client = TestClient(app)
+    page = client.get("/")
+    assert page.status_code == 200
+    assert 'id="demo-preview"' in page.text
+    assert client.get("/assets/app.js").status_code == 200
+    response = client.options("/api/jobs", headers={
+        "Origin": "http://127.0.0.1:5173",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "content-type",
+    })
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"
 
 
 def test_upload_rejects_non_pdf():
     client = TestClient(app)
     response = client.post("/api/jobs", files={"file": ("notes.txt", b"not a pdf", "text/plain")})
     assert response.status_code == 400
+
+
+def test_upload_rejects_invalid_pdf_contents():
+    client = TestClient(app)
+    response = client.post("/api/jobs", files={"file": ("renamed.pdf", b"not a pdf", "application/pdf")})
+    assert response.status_code == 400
+    assert response.json()["detail"] == "The selected file is not a valid PDF."
