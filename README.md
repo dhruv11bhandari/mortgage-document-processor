@@ -17,6 +17,7 @@ The classifier intentionally does not call an LLM or use a trained embedding mod
 
 ## how it looks
 
+https://github.com/user-attachments/assets/5cd6b495-dcab-4769-a366-e50aacebaf3a
 
 ## Run locally
 Requires Python 3.10 or later.
