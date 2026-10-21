@@ -20,11 +20,10 @@ The classifier intentionally does not call an LLM or use a trained embedding mod
 Requires Python 3.10 or later.
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\\Scripts\\activate
-python -m pip install -r Requirements.txt
-uvicorn mortgage_processor.api:app --reload
+./start.sh
 ```
+
+The launcher creates `.venv` and installs the runtime dependencies on the first run, then starts the app. Stop it with `Ctrl+C`. Optional settings: `HOST` (default `127.0.0.1`) and `PORT` (default `8000`).
 
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000). On macOS, install Tesseract with `brew install tesseract`; on Ubuntu/Debian, use `sudo apt install tesseract-ocr`. Without Tesseract, digital PDFs still work and scanned pages are marked for review.
 
