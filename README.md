@@ -73,3 +73,7 @@ python -m pytest
 ## Privacy and operational notes
 
 This is a local development application, not a hardened multi-user service. Keep `data/` access restricted, use trusted input PDFs, and place it behind suitable authentication and storage controls before exposing it on a network. The default local instance does not implement user accounts, retention policies, encryption-at-rest, or a durable distributed queue.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
