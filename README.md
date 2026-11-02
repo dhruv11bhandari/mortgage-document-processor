@@ -2,6 +2,7 @@
 
 Mortgage Desk turns mortgage PDF packages into organized, review-ready document groups. It combines a local web workspace with a FastAPI service and a transparent, keyword-based classifier. The app runs on your machine; uploaded documents are written under `data/` and are not sent to a hosted service.
 
+
 > **Review required:** classification and page grouping are assistive. They are not underwriting, compliance, or lending decisions. Confirm every result and exception with a qualified reviewer.
 
 ## What it does
