@@ -16,3 +16,4 @@ fi
 host="${HOST:-127.0.0.1}"
 port="${PORT:-8000}"
 exec .venv/bin/uvicorn backend.app.main:app --host "$host" --port "$port" --reload
+
